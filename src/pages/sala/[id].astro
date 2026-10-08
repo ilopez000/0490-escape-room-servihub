@@ -1,0 +1,286 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SALES, type Sala } from '../../data/joc';
+import { ressalta } from '../../scripts/ressalta';
+
+export function getStaticPaths() {
+  return SALES.map((sala) => ({ params: { id: String(sala.id) }, props: { sala } }));
+}
+
+const { sala } = Astro.props as { sala: Sala };
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<Base titol={`${sala.codi} · ${sala.nom}`}>
+  <script type="application/json" id="dades-sala" set:html={JSON.stringify(sala)} />
+
+  <section id="denegat" class="denegat" hidden>
+    <p class="sobretitol">{sala.codi}</p>
+    <h1 class="glitch vermell" data-text="NUCLI ATURAT">NUCLI ATURAT</h1>
+    <p>El planificador encara no assigna feina a aquest nucli: primer has d'engegar el nucli anterior.</p>
+    <a class="boto boto-principal" href={`${base}/`}>Torna al servidor</a>
+  </section>
+
+  <article id="sala" class="sala" hidden>
+    <header class="sala-cap">
+      <a class="enrere" href={`${base}/`}>◂ Servidor</a>
+      <p class="sobretitol">{sala.codi} · {sala.lloc}</p>
+      <h1><span class="sala-icona" aria-hidden="true">{sala.icona}</span> {sala.nom}</h1>
+      <p class="sistema">Sistema a restaurar: <b>{sala.sistema}</b></p>
+      <ol class="passos" aria-label="Progrés del nucli">
+        <li data-pas="1" class="actiu">Alerta</li>
+        <li data-pas="2">Manual</li>
+        <li data-pas="3">Reptes</li>
+        <li data-pas="4">Mòdul</li>
+      </ol>
+    </header>
+
+    <p id="repas" class="avis-repas" hidden>
+      Aquest nucli ja està en marxa. Pots tornar-lo a jugar per repassar, però la puntuació desada no canviarà.
+    </p>
+
+    <div class="terminal">
+      <div class="terminal-barra"><span></span><span></span><span></span> servihub://{sala.codi.toLowerCase().replace(' ', '-')}</div>
+      <div class="terminal-cos" id="transmissio"></div>
+      <button class="boto boto-fantasma salta" type="button" data-salta>Salta ▸▸</button>
+    </div>
+
+    <section id="bloc-teoria" class="bloc-teoria" hidden>
+      <div class="teoria-cap">
+        <h2>Manual del nucli</h2>
+        <span class="comptador-pagines" id="comptador-pagines">0 / {sala.teoria.length}</span>
+      </div>
+      <p class="ajuda">Desbloqueja les {sala.teoria.length} pàgines del manual per obrir els reptes. Llegeix-les bé: els reptes en pregunten els detalls.</p>
+      <div class="arxius">
+        {sala.teoria.map((t, i) => (
+          <section class="arxiu xifrat" data-arxiu={i}>
+            <header>
+              <span class="arxiu-num">PÀGINA {String(i + 1).padStart(2, '0')}</span>
+              <h3>{t.titol}</h3>
+            </header>
+            <div class="arxiu-cos">
+              <Fragment set:html={t.html} />
+              {t.codi && <pre class="codi"><code set:html={ressalta(t.codi)} /></pre>}
+              {t.linies && (
+                <table class="taula-linies">
+                  <thead><tr><th>Fragment</th><th>Què fa</th></tr></thead>
+                  <tbody>
+                    {t.linies.map((l) => (
+                      <tr><td><code set:html={ressalta(l.codi)} /></td><td>{l.explica}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+            <button class="boto boto-desxifra" type="button">Restaura la pàgina</button>
+          </section>
+        ))}
+      </div>
+      <aside id="idea-clau" class="idea-clau" hidden>
+        <span class="idea-etiqueta">Idea clau</span>
+        <p>{sala.ideaClau}</p>
+      </aside>
+      <div class="centre">
+        <button id="ves-al-pany" class="boto boto-principal gran" type="button" hidden>Als reptes ▶</button>
+      </div>
+    </section>
+
+    <section id="bloc-panys" class="bloc-panys" hidden>
+      <div class="barra-reptes" id="barra-reptes" aria-hidden="true">
+        {sala.proves.map(() => <span></span>)}
+      </div>
+      <p id="compte-panys" class="compte-panys"></p>
+      <div id="pany"></div>
+    </section>
+
+    <section id="bloc-fragment" class="bloc-fragment" hidden>
+      <p class="sobretitol">Nucli restaurat · {sala.sistema}</p>
+      <div class="fragment-gran" aria-live="polite">
+        <span class="fragment-pos">Mòdul {sala.fragment.posicio} de 6</span>
+        <span class="fragment-lletra">{sala.fragment.lletra}</span>
+      </div>
+      <p class="missatge-final">{sala.missatgeFinal}</p>
+      <dl class="resum-node">
+        <div><dt>XP</dt><dd id="res-xp">0</dd></div>
+        <div><dt>Bonus ratxa</dt><dd id="res-bonus">0</dd></div>
+        <div><dt>Errors</dt><dd id="res-errors">0</dd></div>
+        <div><dt>Pistes</dt><dd id="res-pistes">0</dd></div>
+        <div><dt>Estrelles</dt><dd id="res-estrelles" class="estrelles">☆☆☆</dd></div>
+      </dl>
+      <p class="ajuda">Anota la lletra i la seva posició: al kernel hauràs de compondre l'ordre de reinici.</p>
+      <div class="centre">
+        {sala.id < SALES.length
+          ? <a class="boto boto-principal gran" href={`${base}/sala/${sala.id + 1}/`}>Engega el nucli {sala.id + 1} ▶</a>
+          : <a class="boto boto-principal gran" href={`${base}/final/`}>Baixa al kernel ▼</a>}
+        <a class="boto boto-fantasma" href={`${base}/`}>Edifici</a>
+      </div>
+    </section>
+  </article>
+
+  <script>
+    import type { Sala } from '../../data/joc';
+    import { avis, confeti, desbloqueja, flotant, revisaAssoliments } from '../../scripts/assoliments';
+    import { carrega, desa, rebCop, resumSala, salaDesbloquejada, tancaRepte, type EstatRepte } from '../../scripts/estat';
+    import { destacaHud, pintaHud } from '../../scripts/hud';
+    import { montaProva } from '../../scripts/proves';
+    import { so } from '../../scripts/so';
+    import { transmet } from '../../scripts/transmissio';
+
+    const sala = JSON.parse(document.getElementById('dades-sala')!.textContent!) as Sala;
+    const estat = carrega();
+    const $ = (id: string) => document.getElementById(id)!;
+
+    if (!estat.nom || !salaDesbloquejada(estat, sala.id)) {
+      $('denegat').hidden = false;
+    } else {
+      $('sala').hidden = false;
+      const repas = Boolean(estat.sales[sala.id]?.completada);
+      $('repas').hidden = !repas;
+      inicia(repas);
+    }
+
+    function marcaPas(n: number) {
+      document.querySelectorAll<HTMLElement>('.passos li').forEach((li) => {
+        const p = Number(li.dataset.pas);
+        li.classList.toggle('fet', p < n);
+        li.classList.toggle('actiu', p === n);
+      });
+    }
+
+    function inicia(repas: boolean) {
+      // Pàgines del manual
+      const arxius = [...document.querySelectorAll<HTMLElement>('.arxiu')];
+      const comptador = $('comptador-pagines');
+      const actualitzaComptador = () => {
+        const fetes = arxius.filter((a) => !a.classList.contains('xifrat')).length;
+        comptador.textContent = `${fetes} / ${arxius.length}`;
+      };
+      arxius.forEach((arxiu) => {
+        arxiu.querySelector('.boto-desxifra')!.addEventListener('click', (e) => {
+          const boto = e.currentTarget as HTMLButtonElement;
+          arxiu.classList.add('desxifrant');
+          boto.disabled = true;
+          if (!repas) so('clic');
+          setTimeout(() => {
+            arxiu.classList.remove('xifrat', 'desxifrant');
+            boto.remove();
+            actualitzaComptador();
+            if (arxius.every((a) => !a.classList.contains('xifrat'))) {
+              $('idea-clau').hidden = false;
+              $('ves-al-pany').hidden = false;
+              if (!repas) so('ok');
+            }
+          }, repas ? 0 : 650);
+        });
+      });
+
+      transmet($('transmissio'), sala.transmissio, () => {
+        marcaPas(2);
+        $('bloc-teoria').hidden = false;
+        if (repas) document.querySelectorAll<HTMLButtonElement>('.boto-desxifra').forEach((b) => b.click());
+      });
+
+      // Reptes
+      let index = 0;
+      let errorsPany = 0;
+      let pistesPany = 0;
+      const resultats: EstatRepte[] = [];
+      const segments = [...document.querySelectorAll<HTMLElement>('#barra-reptes span')];
+
+      $('ves-al-pany').addEventListener('click', () => {
+        so('clic');
+        marcaPas(3);
+        $('bloc-teoria').hidden = true;
+        $('bloc-panys').hidden = false;
+        seguent();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      function seguent() {
+        const prova = sala.proves[index];
+        errorsPany = 0;
+        pistesPany = 0;
+        segments.forEach((s, i) => {
+          s.classList.toggle('actual', i === index);
+        });
+        $('compte-panys').textContent = `Repte ${index + 1} de ${sala.proves.length}`;
+        montaProva($('pany'), prova, {
+          onError: () => {
+            errorsPany += 1;
+            if (repas) return;
+            const e = carrega();
+            const ratxaPerduda = e.ratxa >= 2;
+            const resultat = rebCop(e);
+            pintaHud(e);
+            if (resultat === 'escut') {
+              so('escut');
+              flotant('⛨ Escut!', 'escut');
+              avis('⛨  L\'escut ha aturat el cop', 'No perds vida, però la ratxa es reinicia.', 'escut');
+              destacaHud('escuts');
+            } else {
+              flotant('−4% vida', 'cop');
+              destacaHud('integritat');
+              if (ratxaPerduda) avis('💥  Ratxa trencada', 'Torna a encadenar reptes perfectes per recuperar el bonus.', 'cop');
+            }
+          },
+          onPista: () => {
+            pistesPany += 1;
+          },
+          onResolta: () => {
+            if (repas) {
+              resultats.push({ errors: errorsPany, pistes: pistesPany, xp: 0, bonus: 0 });
+            } else {
+              const e = carrega();
+              const { repte, perfecte, ratxa, escutNou } = tancaRepte(e, errorsPany, pistesPany);
+              resultats.push(repte);
+              flotant(`+${repte.xp + repte.bonus} XP`);
+              if (perfecte && ratxa >= 2) {
+                so('ratxa');
+                avis(`🔥  Ratxa ×${ratxa}`, `${ratxa} reptes perfectes seguits · +${repte.bonus} XP de bonus`, 'ratxa');
+              }
+              if (escutNou) {
+                so('escut');
+                avis('⛨  Escut guanyat', 'El proper error no et traurà vida.', 'escut');
+              }
+              desbloqueja(e, 'primer-repte');
+              revisaAssoliments(e);
+              pintaHud(e);
+              destacaHud('ratxa');
+            }
+            segments[index]?.classList.add(errorsPany === 0 && pistesPany === 0 ? 'perfecte' : 'fet');
+            index += 1;
+            if (index < sala.proves.length) {
+              seguent();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+              acaba();
+            }
+          },
+        });
+      }
+
+      function acaba() {
+        marcaPas(4);
+        $('bloc-panys').hidden = true;
+        $('bloc-fragment').hidden = false;
+        const resum = resumSala(resultats);
+        $('res-xp').textContent = repas ? '— (repàs)' : `+${resum.xp}`;
+        $('res-bonus').textContent = repas ? '—' : `+${resum.bonus}`;
+        $('res-errors').textContent = String(resum.errors);
+        $('res-pistes').textContent = String(resum.pistes);
+        const estrelles = resum.errors === 0 && resum.pistes === 0 ? 3 : resum.errors <= 2 && resum.pistes === 0 ? 2 : 1;
+        $('res-estrelles').textContent = '★'.repeat(estrelles) + '☆'.repeat(3 - estrelles);
+        if (!repas) {
+          const e = carrega();
+          e.sales[sala.id] = resum;
+          desa(e);
+          revisaAssoliments(e);
+          pintaHud(e);
+          destacaHud('xp');
+        }
+        so('victoria');
+        confeti(2200);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  </script>
+</Base>
