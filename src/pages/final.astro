@@ -1,0 +1,412 @@
+---
+import Base from '../layouts/Base.astro';
+import { CHECKLIST, CORREU_DOCENT, SALES } from '../data/joc';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<Base titol="Kernel">
+  <section id="denegat" class="denegat" hidden>
+    <p class="sobretitol">Kernel · Taula de processos</p>
+    <h1 class="glitch vermell" data-text="ACCÉS DENEGAT">ACCÉS DENEGAT</h1>
+    <p>Per baixar al kernel necessites les sis lletres: engega tots els nuclis.</p>
+    <a class="boto boto-principal" href={`${base}/`}>Torna al servidor</a>
+  </section>
+
+  <!-- Fase 1: l'ordre de reinici -->
+  <section id="fase-clau" class="fase-clau" hidden>
+    <p class="sobretitol">Kernel · Consola de reinici</p>
+    <h1 class="glitch" data-text="COMPILA L'ORDRE">COMPILA L'ORDRE</h1>
+    <p class="intro-mapa">
+      Tens les sis lletres. Cada lletra porta la posició que ocupa a l'ordre de reinici. Col·loca-les en ordre.
+      Pista: és el cor del sistema operatiu, el que gestiona tots els processos.
+    </p>
+    <div class="fragments-recollits">
+      {SALES.map((sala) => (
+        <div class="fragment-tile">
+          <span class="fragment-pos">{sala.codi}</span>
+          <span class="fragment-lletra">{sala.fragment.lletra}</span>
+          <span class="fragment-pos">posició {sala.fragment.posicio}</span>
+        </div>
+      ))}
+    </div>
+    <form id="form-clau" class="form-clau">
+      <label for="clau">Ordre de reinici</label>
+      <div class="caselles-clau" id="caselles"></div>
+      <input id="clau" class="input-clau" type="text" maxlength="6" autocomplete="off" spellcheck="false" aria-describedby="missatge-clau" />
+      <button class="boto boto-principal gran" type="submit">Executa</button>
+      <p id="missatge-clau" class="pany-missatge" role="status"></p>
+    </form>
+  </section>
+
+  <!-- Fase 2: combat -->
+  <section id="fase-quiz" class="fase-quiz" hidden>
+    <p class="sobretitol">Kernel · Combat final</p>
+    <div class="boss">
+      <div class="boss-avatar" id="boss-avatar" aria-hidden="true">
+        <span class="boss-ull"></span><span class="boss-ull"></span>
+        <span class="boss-boca"></span>
+      </div>
+      <div class="boss-info">
+        <h1 class="boss-nom">EL REI ZOMBI · PID 666</h1>
+        <p class="boss-frase" id="boss-frase">«Ningú no m'ha esperat mai. I tu tampoc no ho faràs.»</p>
+        <div class="boss-vida" role="progressbar" aria-label="Vida del Rei Zombi" aria-valuemin="0" aria-valuemax="100" id="boss-vida-barra">
+          <span class="boss-vida-ple" id="boss-vida"></span>
+        </div>
+        <p class="boss-hp" id="boss-hp"></p>
+      </div>
+    </div>
+    <div id="pany-final"></div>
+  </section>
+
+  <!-- Fase 3: informe -->
+  <section id="fase-informe" class="informe" hidden>
+    <div class="certificat" id="certificat">
+      <p class="sobretitol">Servidor reiniciat · ServiHub · MP 0490</p>
+      <h1 class="glitch verd" data-text="KERNEL EN MARXA">KERNEL EN MARXA</h1>
+      <p class="certificat-agent">Equip d'operacions: <strong id="inf-nom"></strong> <span id="inf-alies" class="suau"></span></p>
+      <p class="rang-etiqueta">Rang obtingut</p>
+      <p class="rang" id="inf-rang"></p>
+      <p class="rang-text" id="inf-rang-text"></p>
+
+      <dl class="resum-node gran">
+        <div><dt>Rendiment</dt><dd id="inf-percent"></dd></div>
+        <div><dt>XP total</dt><dd id="inf-xp"></dd></div>
+        <div><dt>Vida</dt><dd id="inf-integritat"></dd></div>
+        <div><dt>Errors</dt><dd id="inf-errors"></dd></div>
+        <div><dt>Pistes</dt><dd id="inf-pistes"></dd></div>
+        <div><dt>Millor ratxa</dt><dd id="inf-ratxa"></dd></div>
+      </dl>
+
+      <h2>Assoliments</h2>
+      <ul class="insignies" id="inf-insignies"></ul>
+
+      <h2>Nuclis</h2>
+      <table class="taula-nodes">
+        <thead><tr><th>Nucli</th><th>XP</th><th>Errors</th><th>Pistes</th></tr></thead>
+        <tbody id="inf-nodes"></tbody>
+      </table>
+
+      <h2>On t'has entrebancat més</h2>
+      <ul class="fluixos" id="inf-fluixos"></ul>
+      <p class="data-informe" id="inf-data"></p>
+    </div>
+
+    <section class="checklist">
+      <h2>Autoavaluació</h2>
+      <p class="ajuda">Marca el que ja saps fer. Surt a l'informe: el que quedi sense marcar és el que has de repassar als recursos de les sessions 1 i 2 i al repositori d'exemples.</p>
+      <ul>
+        {CHECKLIST.map((item, i) => (
+          <li><label><input type="checkbox" data-check={i} /> <span>{item}</span></label></li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="enviament">
+      <h2>Envia l'informe al professor</h2>
+      <p class="ajuda">
+        L'informe va a <strong>{CORREU_DOCENT}</strong>. Marca primer l'autoavaluació: s'hi inclou. Tria una manera:
+      </p>
+      <div class="opcions-enviament">
+        <a class="boto boto-principal" id="envia-gmail" href="#" target="_blank" rel="noopener">✉ Envia amb Gmail</a>
+        <a class="boto boto-fantasma" id="envia-correu" href="#">✉ Obre el programa de correu</a>
+        <button class="boto boto-fantasma" id="copia" type="button">⧉ Copia el text</button>
+        <button class="boto boto-fantasma" id="descarrega" type="button">⤓ Descarrega l'informe (.html)</button>
+        <button class="boto boto-fantasma" id="imprimeix" type="button">⎙ Desa en PDF</button>
+      </div>
+      <p class="ajuda petita">
+        Si el botó de correu no obre res, fes «Copia el text», escriu un correu nou a {CORREU_DOCENT} i enganxa-hi el text.
+        També hi pots adjuntar el fitxer descarregat o el PDF. El codi de verificació permet al professor comprovar que les xifres no s'han tocat.
+      </p>
+      <details class="previsualitza">
+        <summary>Mostra el text que s'enviarà</summary>
+        <pre id="text-informe"></pre>
+      </details>
+      <p id="missatge-copia" class="pany-missatge" role="status"></p>
+    </section>
+
+    <div class="centre accions-informe">
+      <a class="boto boto-fantasma" href={`${base}/`}>Edifici</a>
+      <a class="boto boto-fantasma" href={`${base}/assoliments/`}>🏅 Assoliments</a>
+      <button id="reinicia" class="boto boto-fantasma" type="button">Nova partida</button>
+    </div>
+  </section>
+
+  <script>
+    import { CLAU_MESTRA, PROVA_FINAL, RANGS } from '../data/joc';
+    import { ASSOLIMENTS, avis, confeti, flotant, revisaAssoliments } from '../scripts/assoliments';
+    import { carrega, desa, rebCop, reinicia, tancaRepte, totesCompletades } from '../scripts/estat';
+    import { destacaHud, pintaHud } from '../scripts/hud';
+    import { calculaInforme, dataLlegible, descarregaInforme, enllacGmail, enllacMailto, textInforme } from '../scripts/informe';
+    import { montaProva } from '../scripts/proves';
+    import { so } from '../scripts/so';
+
+    const $ = (id: string) => document.getElementById(id)!;
+    const estat = carrega();
+
+    if (!estat.nom || !totesCompletades(estat)) {
+      $('denegat').hidden = false;
+    } else if (estat.final.completada) {
+      mostraInforme();
+    } else if (estat.clauIntroduida) {
+      faseQuiz();
+    } else {
+      faseClau();
+    }
+
+    // ---------------------------------------------------------- fase 1
+    function faseClau() {
+      $('fase-clau').hidden = false;
+      const input = $('clau') as HTMLInputElement;
+      const caselles = $('caselles');
+      const pinta = () => {
+        caselles.innerHTML = '';
+        for (let i = 0; i < CLAU_MESTRA.length; i++) {
+          const c = document.createElement('span');
+          c.className = 'casella-clau';
+          c.textContent = input.value[i]?.toUpperCase() ?? '';
+          const n = document.createElement('small');
+          n.textContent = String(i + 1);
+          c.append(n);
+          caselles.append(c);
+        }
+      };
+      caselles.addEventListener('click', () => input.focus());
+      input.addEventListener('input', () => {
+        input.value = input.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
+        pinta();
+      });
+      pinta();
+      input.focus();
+
+      $('form-clau').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const missatge = $('missatge-clau');
+        if (input.value.length < CLAU_MESTRA.length) {
+          missatge.textContent = `L'ordre té ${CLAU_MESTRA.length} lletres.`;
+          missatge.dataset.tipus = 'info';
+          return;
+        }
+        if (input.value.toUpperCase() === CLAU_MESTRA) {
+          const e2 = carrega();
+          e2.clauIntroduida = true;
+          desa(e2);
+          so('desbloqueig');
+          missatge.textContent = 'kernel reiniciat. El Rei Zombi surt de la taula de processos…';
+          missatge.dataset.tipus = 'ok';
+          setTimeout(() => {
+            $('fase-clau').hidden = true;
+            faseQuiz();
+          }, 1100);
+        } else {
+          const e2 = carrega();
+          rebCop(e2);
+          pintaHud(e2);
+          destacaHud('integritat');
+          so('error');
+          missatge.textContent = 'Ordre desconeguda. Ordena les lletres per la posició que indica cada nucli.';
+          missatge.dataset.tipus = 'error';
+          const form = $('form-clau');
+          form.classList.remove('sacseja');
+          void form.offsetWidth;
+          form.classList.add('sacseja');
+        }
+      });
+    }
+
+    // ---------------------------------------------------------- fase 2: combat
+    const FRASES_COP = [
+      '«Aix! M\'has llegit la sortida d\'error…»',
+      '«Com saps tant de ProcessBuilder?!»',
+      '«Els meus fills es desbloquegen!»',
+      '«No! Un waitFor() amb temps màxim!»',
+      '«Això no estava al javadoc!»',
+      '«Arguments separats… odio els arguments separats.»',
+      '«Paral·lel… em marejo…»',
+      '«Un últim waitFor() i me\'n vaig…»',
+    ];
+    const FRASES_ATAC = [
+      '«Ha! Una IOException a la teva confiança.»',
+      '«Has fet waitFor() sense llegir, oi?»',
+      '«exitValue() massa d\'hora: IllegalThreadStateException!»',
+      '«Codi de retorn 1. Com tu.»',
+    ];
+
+    function faseQuiz() {
+      $('fase-quiz').hidden = false;
+      document.body.classList.add('combat');
+      const total = PROVA_FINAL.preguntes.length;
+      let encerts = 0;
+      let errors = 0;
+      let pistes = 0;
+      const avatar = $('boss-avatar');
+      const pintaBoss = () => {
+        const vida = Math.round(((total - encerts) / total) * 100);
+        $('boss-vida').style.width = `${vida}%`;
+        $('boss-vida-barra').setAttribute('aria-valuenow', String(vida));
+        $('boss-hp').textContent = `HP ${total - encerts} / ${total}`;
+      };
+      const anima = (classe: string) => {
+        avatar.classList.remove('ferit', 'ataca');
+        void avatar.offsetWidth;
+        avatar.classList.add(classe);
+      };
+      pintaBoss();
+      montaProva($('pany-final'), PROVA_FINAL, {
+        onEncert: () => {
+          encerts += 1;
+          pintaBoss();
+          anima('ferit');
+          so('cop');
+          flotant(`−1 HP`, 'cop');
+          $('boss-frase').textContent = FRASES_COP[(encerts - 1) % FRASES_COP.length];
+        },
+        onError: () => {
+          errors += 1;
+          anima('ataca');
+          const e = carrega();
+          const resultat = rebCop(e);
+          pintaHud(e);
+          if (resultat === 'escut') {
+            so('escut');
+            flotant('⛨ Escut!', 'escut');
+            destacaHud('escuts');
+          } else {
+            flotant('−4% vida', 'cop');
+            destacaHud('integritat');
+          }
+          $('boss-frase').textContent = FRASES_ATAC[(errors - 1) % FRASES_ATAC.length];
+        },
+        onPista: () => {
+          pistes += 1;
+        },
+        onResolta: () => {
+          const e = carrega();
+          const { repte } = tancaRepte(e, errors, pistes);
+          e.final = { completada: true, xp: repte.xp, bonus: repte.bonus, errors, pistes, reptes: [repte] };
+          desa(e);
+          revisaAssoliments(e);
+          pintaHud(e);
+          destacaHud('xp');
+          avatar.classList.add('derrotat');
+          $('boss-frase').textContent = '«Codi de retorn… recollit… per fi… puc… descansar…»';
+          so('victoria');
+          setTimeout(() => {
+            $('fase-quiz').hidden = true;
+            document.body.classList.remove('combat');
+            mostraInforme();
+            confeti(5000);
+            avis('🏆  El Rei Zombi ha estat recollit', 'ServiHub torna a estar en línia.', 'assoliment');
+          }, 1400);
+        },
+      });
+    }
+
+    // ---------------------------------------------------------- fase 3: informe
+    function mostraInforme() {
+      const e = carrega();
+      $('fase-informe').hidden = false;
+      document.body.classList.add('victoria');
+      const d = calculaInforme(e);
+      const rang = RANGS.find((r) => r.nom === d.rang)!;
+
+      $('inf-nom').textContent = d.nom;
+      $('inf-alies').textContent = d.alies && d.alies !== d.nom ? `(${d.alies})` : '';
+      $('inf-rang').textContent = rang.nom;
+      $('inf-rang-text').textContent = rang.text;
+      $('inf-percent').textContent = `${d.percent}%`;
+      $('inf-xp').textContent = String(d.xp);
+      $('inf-integritat').textContent = `${d.vida}%`;
+      $('inf-errors').textContent = String(d.errors);
+      $('inf-pistes').textContent = String(d.pistes);
+      $('inf-ratxa').textContent = `×${d.millorRatxa}`;
+      $('inf-data').textContent = `Informe generat el ${dataLlegible(d.data)} · XP de base ${d.base} de ${d.maxim} + ${d.bonus} de bonus per ratxes`;
+
+      const cos = $('inf-nodes');
+      cos.innerHTML = '';
+      [...d.plantes.map((p) => ({ nom: `${p.id} · ${p.nom}`, xp: p.xp, errors: p.errors, pistes: p.pistes })), { nom: 'Kernel · El Rei Zombi', ...d.boss }].forEach((f) => {
+        const tr = document.createElement('tr');
+        [f.nom, String(f.xp), String(f.errors), String(f.pistes)].forEach((t) => {
+          const td = document.createElement('td');
+          td.textContent = t;
+          tr.append(td);
+        });
+        cos.append(tr);
+      });
+
+      const fluixos = $('inf-fluixos');
+      fluixos.innerHTML = '';
+      (d.fluixos.length ? d.fluixos.map((f) => `${f.planta} · ${f.repte}: ${f.errors} errors, ${f.pistes} pistes`) : ['Cap: tots els reptes superats al primer intent i sense pistes. Impecable.']).forEach((t) => {
+        const li = document.createElement('li');
+        li.textContent = t;
+        fluixos.append(li);
+      });
+
+      const llista = $('inf-insignies');
+      llista.innerHTML = '';
+      ASSOLIMENTS.forEach((a) => {
+        const te = d.assoliments.includes(a.id);
+        const li = document.createElement('li');
+        li.className = te ? 'insignia guanyada' : 'insignia';
+        li.innerHTML = '<span class="insignia-icona"></span><span><b></b><small></small></span>';
+        li.querySelector('.insignia-icona')!.textContent = te ? a.icona : '🔒';
+        li.querySelector('b')!.textContent = a.nom;
+        li.querySelector('small')!.textContent = a.desc;
+        llista.append(li);
+      });
+
+      // Autoavaluació: es desa i actualitza el text de l'informe
+      document.querySelectorAll<HTMLInputElement>('[data-check]').forEach((chk) => {
+        const i = Number(chk.dataset.check);
+        chk.checked = Boolean(e.checklist[i]);
+        chk.addEventListener('change', () => {
+          const e2 = carrega();
+          e2.checklist[i] = chk.checked;
+          desa(e2);
+          actualitzaEnviament();
+        });
+      });
+      actualitzaEnviament();
+    }
+
+    function actualitzaEnviament() {
+      const d = calculaInforme(carrega());
+      ($('envia-gmail') as HTMLAnchorElement).href = enllacGmail(d);
+      ($('envia-correu') as HTMLAnchorElement).href = enllacMailto(d);
+      $('text-informe').textContent = textInforme(d);
+    }
+
+    $('copia').addEventListener('click', async () => {
+      const text = textInforme(calculaInforme(carrega()));
+      const missatge = $('missatge-copia');
+      try {
+        await navigator.clipboard.writeText(text);
+        missatge.textContent = 'Text copiat. Enganxa\'l en un correu nou a ilopez@pratfp.com.';
+        missatge.dataset.tipus = 'ok';
+      } catch {
+        const details = document.querySelector<HTMLDetailsElement>('.previsualitza')!;
+        details.open = true;
+        const rang = document.createRange();
+        rang.selectNodeContents($('text-informe'));
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(rang);
+        missatge.textContent = 'No s\'ha pogut copiar automàticament: el text ja està seleccionat, fes Ctrl+C.';
+        missatge.dataset.tipus = 'info';
+      }
+    });
+    $('descarrega').addEventListener('click', () => descarregaInforme(calculaInforme(carrega())));
+    $('imprimeix').addEventListener('click', () => window.print());
+
+    const botoReinicia = $('reinicia') as HTMLButtonElement;
+    let confirma = false;
+    botoReinicia.addEventListener('click', () => {
+      if (!confirma) {
+        confirma = true;
+        botoReinicia.textContent = 'Segur? Primer envia l\'informe. Clica un altre cop';
+        botoReinicia.classList.add('perill');
+        return;
+      }
+      reinicia();
+      location.href = import.meta.env.BASE_URL;
+    });
+  </script>
+</Base>

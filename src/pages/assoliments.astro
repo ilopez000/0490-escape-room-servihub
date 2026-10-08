@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<Base titol="Assoliments">
+  <section class="pagina-assoliments">
+    <a class="enrere" href={`${base}/`}>◂ Servidor</a>
+    <p class="sobretitol">Vitrina de trofeus</p>
+    <h1>Assoliments <span class="accent" id="compte-assoliments"></span></h1>
+    <p class="intro-mapa">Alguns surten sols jugant; d'altres només els aconsegueix qui no s'equivoca. Pots tornar a començar la partida per aconseguir-los tots.</p>
+    <ul class="insignies grans" id="llista-assoliments"></ul>
+  </section>
+
+  <script>
+    import { ASSOLIMENTS } from '../scripts/assoliments';
+    import { carrega } from '../scripts/estat';
+
+    const estat = carrega();
+    const llista = document.getElementById('llista-assoliments')!;
+    let tinc = 0;
+    ASSOLIMENTS.forEach((a) => {
+      const te = estat.assoliments.includes(a.id);
+      if (te) tinc += 1;
+      const li = document.createElement('li');
+      li.className = te ? 'insignia guanyada' : 'insignia';
+      li.innerHTML = '<span class="insignia-icona"></span><span><b></b><small></small></span>';
+      li.querySelector('.insignia-icona')!.textContent = te ? a.icona : '🔒';
+      li.querySelector('b')!.textContent = a.nom;
+      li.querySelector('small')!.textContent = a.desc;
+      llista.append(li);
+    });
+    document.getElementById('compte-assoliments')!.textContent = `${tinc}/${ASSOLIMENTS.length}`;
+  </script>
+</Base>

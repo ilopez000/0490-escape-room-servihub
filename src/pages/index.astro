@@ -1,0 +1,185 @@
+---
+import Base from '../layouts/Base.astro';
+import { INTRO, SALES } from '../data/joc';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const plantes = [...SALES].reverse();
+---
+<Base titol="Inici">
+  <!-- Pantalla 1: l'alerta i el registre -->
+  <section id="briefing" class="briefing" hidden>
+    <p class="sobretitol">Sala de servidors de ServiHub · {INTRO.subtitol}</p>
+    <h1 class="glitch" data-text={INTRO.titol}>{INTRO.titol}</h1>
+    <div class="terminal">
+      <div class="terminal-barra"><span></span><span></span><span></span> servihub://kernel/panic</div>
+      <div class="terminal-cos" id="missatge-intro"></div>
+      <button class="boto boto-fantasma salta" type="button" data-salta>Salta ▸▸</button>
+    </div>
+
+    <form id="form-agent" class="form-agent" hidden>
+      <div class="camps-registre">
+        <div class="camp">
+          <label for="nom-real">Nom i cognoms <span class="obligatori">(surt a l'informe per al professor)</span></label>
+          <input id="nom-real" name="nom" type="text" maxlength="60" autocomplete="name" placeholder="p. ex. Laia Puig Soler" required />
+        </div>
+        <div class="camp">
+          <label for="nom-agent">Àlies de joc <span class="opcional">(opcional)</span></label>
+          <input id="nom-agent" name="alies" type="text" maxlength="24" autocomplete="off" placeholder="p. ex. PID_404" />
+        </div>
+      </div>
+      <div class="centre esquerra">
+        <button class="boto boto-principal gran" type="submit">Entra a la sala de servidors ▶</button>
+      </div>
+      <ul class="regles">
+        <li><b>6 nuclis</b>, un per cada bloc del que hem vist. A cada nucli llegeixes el manual i superes els reptes.</li>
+        <li><b>100 XP</b> per repte. Cada error en treu 10 i cada pista 30. Cada error et treu vida.</li>
+        <li><b>Ratxes</b>: reptes perfectes seguits donen XP extra i, cada 3, un <b>escut</b> que absorbeix un error.</li>
+        <li><b>Assoliments</b> amagats, un boss final i un informe que pots enviar al professor.</li>
+      </ul>
+    </form>
+  </section>
+
+  <!-- Pantalla 2: el servidor -->
+  <section id="mapa" class="mapa" hidden>
+    <div class="mapa-cap">
+      <div>
+        <p class="sobretitol">El servidor de ServiHub</p>
+        <h1>Engega els <span class="accent">sis nuclis</span></h1>
+        <p class="intro-mapa">
+          Els nuclis s'engeguen de baix a dalt. Cada nucli restaurat torna a posar en marxa un sistema del servidor i
+          et dona una lletra. Amb les sis, baixa al kernel a enfrontar-te al Rei Zombi.
+        </p>
+      </div>
+      <div class="progres-edifici" aria-live="polite">
+        <span class="progres-xifra" id="progres-xifra">0/6</span>
+        <span class="progres-text">nuclis en marxa</span>
+      </div>
+    </div>
+
+    <ol class="edifici" aria-label="Nuclis del servidor">
+      <li class="terrat-li">
+        <a class="planta terrat" href={`${base}/final/`} data-node="final">
+          <span class="planta-num" aria-hidden="true">✖</span>
+          <span class="planta-info">
+            <span class="node-codi">KERNEL · BOSS FINAL</span>
+            <span class="node-nom">El Rei Zombi</span>
+            <span class="node-lloc">PID 666 · la taula de processos</span>
+          </span>
+          <span class="finestres" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="node-estat" data-estat>Bloquejat</span>
+        </a>
+      </li>
+      {plantes.map((sala) => (
+        <li>
+          <a class="planta" href={`${base}/sala/${sala.id}/`} data-node={sala.id}>
+            <span class="planta-num" aria-hidden="true">{sala.icona}</span>
+            <span class="planta-info">
+              <span class="node-codi">{sala.codi}</span>
+              <span class="node-nom">{sala.nom}</span>
+              <span class="node-lloc">{sala.lloc}</span>
+            </span>
+            <span class="finestres" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="node-estat" data-estat>Bloquejat</span>
+          </a>
+        </li>
+      ))}
+      <li class="porta-li" aria-hidden="true"><span class="porta">SERVIHUB</span></li>
+    </ol>
+
+    <div class="accions-mapa">
+      <a class="boto boto-fantasma" href={`${base}/assoliments/`}>🏅 Assoliments</a>
+      <button id="reinicia" class="boto boto-fantasma" type="button">Nova partida</button>
+    </div>
+  </section>
+
+  <script>
+    import { INTRO, SALES } from '../data/joc';
+    import { carrega, desa, plantesFetes, reinicia, salaDesbloquejada, totesCompletades } from '../scripts/estat';
+    import { pintaHud } from '../scripts/hud';
+    import { so } from '../scripts/so';
+    import { transmet } from '../scripts/transmissio';
+
+    const briefing = document.getElementById('briefing')!;
+    const mapa = document.getElementById('mapa')!;
+    const form = document.getElementById('form-agent') as HTMLFormElement;
+
+    function mostraMapa() {
+      const estat = carrega();
+      briefing.hidden = true;
+      mapa.hidden = false;
+      document.getElementById('progres-xifra')!.textContent = `${plantesFetes(estat)}/${SALES.length}`;
+      document.querySelectorAll<HTMLAnchorElement>('[data-node]').forEach((node) => {
+        const id = node.dataset.node!;
+        const etiqueta = node.querySelector<HTMLElement>('[data-estat]')!;
+        let estatNode: 'bloquejat' | 'disponible' | 'recuperat';
+        if (id === 'final') {
+          estatNode = estat.final.completada ? 'recuperat' : totesCompletades(estat) ? 'disponible' : 'bloquejat';
+        } else {
+          const n = Number(id);
+          estatNode = estat.sales[n]?.completada ? 'recuperat' : salaDesbloquejada(estat, n) ? 'disponible' : 'bloquejat';
+        }
+        node.dataset.estatNode = estatNode;
+        if (estatNode === 'disponible') node.classList.add('actual');
+        const dades = id === 'final' ? estat.final : estat.sales[Number(id)];
+        etiqueta.textContent =
+          estatNode === 'recuperat'
+            ? id === 'final' ? 'Derrotat' : `En marxa · +${(dades?.xp ?? 0) + (dades?.bonus ?? 0)} XP`
+            : estatNode === 'disponible' ? 'Juga ▶'
+            : 'Aturat';
+        if (estatNode === 'bloquejat') {
+          node.setAttribute('aria-disabled', 'true');
+          node.addEventListener('click', (e) => {
+            e.preventDefault();
+            so('error');
+            node.classList.remove('sacseja');
+            void node.offsetWidth;
+            node.classList.add('sacseja');
+          });
+        }
+      });
+      if (estat.final.completada) document.body.classList.add('victoria');
+      pintaHud(estat);
+    }
+
+    const estat = carrega();
+    if (estat.nom) {
+      mostraMapa();
+    } else {
+      briefing.hidden = false;
+      transmet(document.getElementById('missatge-intro')!, INTRO.transmissio, () => {
+        form.hidden = false;
+        document.getElementById('nom-real')?.focus();
+      });
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const dades = new FormData(form);
+      const nom = String(dades.get('nom') ?? '').trim().replace(/\s+/g, ' ');
+      const alies = String(dades.get('alies') ?? '').trim();
+      if (nom.length < 3) {
+        document.getElementById('nom-real')?.focus();
+        return;
+      }
+      const nou = carrega();
+      nou.nom = nom;
+      nou.alies = alies || nom.split(' ')[0];
+      desa(nou);
+      so('desbloqueig');
+      mostraMapa();
+      window.scrollTo({ top: 0 });
+    });
+
+    const botoReinicia = document.getElementById('reinicia') as HTMLButtonElement;
+    let confirma = false;
+    botoReinicia.addEventListener('click', () => {
+      if (!confirma) {
+        confirma = true;
+        botoReinicia.textContent = 'Segur? Es perdrà tot el progrés. Clica un altre cop';
+        botoReinicia.classList.add('perill');
+        return;
+      }
+      reinicia();
+      location.reload();
+    });
+  </script>
+</Base>
