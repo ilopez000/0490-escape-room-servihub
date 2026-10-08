@@ -1,0 +1,80 @@
+---
+import '@fontsource/space-grotesk/500.css';
+import '@fontsource/space-grotesk/700.css';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/700.css';
+import '../styles/global.css';
+
+interface Props {
+  titol: string;
+  hud?: boolean;
+}
+const { titol, hud = true } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<!doctype html>
+<html lang="ca">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Escape room de repàs de les sessions 1 i 2 del MP 0490 Programació de serveis i processos: processos, fils, concurrència i ProcessBuilder." />
+    <meta name="theme-color" content="#070b14" />
+    <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+    <title>{titol} · ServiHub Kernel Panic · 0490</title>
+  </head>
+  <body>
+    <div class="fons" aria-hidden="true">
+      <div class="fons-ciutat"></div>
+      <div class="fons-llum"></div>
+      <div class="fons-alarma"></div>
+    </div>
+
+    {hud && (
+      <header id="hud" class="hud">
+        <a class="hud-marca" href={`${base}/`} title="Torna al servidor">
+          <span class="logo" aria-hidden="true">▣</span> SERVIHUB <b>KERNEL PANIC</b>
+        </a>
+        <div class="hud-bloc">
+          <span class="hud-etiqueta">Jugador/a</span>
+          <span class="hud-valor" data-hud="agent">—</span>
+        </div>
+        <div class="hud-bloc nivell-xp" data-hud="bloc-xp">
+          <span class="hud-etiqueta"><span data-hud="nivell">LV 1</span> · XP</span>
+          <span class="hud-valor xp" data-hud="xp">0</span>
+          <span class="barra barra-xp"><span class="barra-ple" data-hud="barra-xp"></span></span>
+        </div>
+        <div class="hud-bloc integritat">
+          <span class="hud-etiqueta">Vida</span>
+          <span class="barra"><span class="barra-ple" data-hud="barra"></span></span>
+          <span class="hud-valor petit" data-hud="integritat">100%</span>
+        </div>
+        <div class="hud-bloc ratxa">
+          <span class="hud-etiqueta">Ratxa</span>
+          <span class="hud-valor" data-hud="ratxa">—</span>
+        </div>
+        <div class="hud-bloc">
+          <span class="hud-etiqueta">Escuts</span>
+          <span class="escuts" data-hud="escuts"></span>
+        </div>
+        <div class="hud-bloc">
+          <span class="hud-etiqueta">Mòduls</span>
+          <span class="fragments" data-hud="fragments"></span>
+        </div>
+        <button class="hud-so" type="button" data-hud="so" aria-pressed="true">♪ So</button>
+      </header>
+    )}
+
+    <main class="contingut">
+      <slot />
+    </main>
+
+    <footer class="peu">
+      MP 0490 · Programació de serveis i processos · DAM2 · Repàs de les sessions 1 i 2 · Prat FP
+    </footer>
+
+    <script>
+      import { iniciaHud } from '../scripts/hud';
+      iniciaHud();
+    </script>
+  </body>
+</html>
